@@ -33,18 +33,28 @@ if sudo docker ps -a --format '{{.Names}}' | grep -q '^node-1$'; then
   fi
 fi
 
-echo "📥 Pulling latest XMRig image (miningcontainers/xmrig)..."
+echo "📥 Pulling latest XMRIG image..."
 sudo docker pull miningcontainers/xmrig:latest
 
-echo "🚀 Launching container 'node-1'..."
+# Auto-select working port (7777 or fallback to 443)
+echo "🔍 Checking if port 7777 is open..."
+if nc -zvw3 pool.supportxmr.com 7777; then
+  POOL_PORT=7777
+  echo "✅ Port 7777 is reachable."
+else
+  echo "⚠️ Port 7777 is blocked. Switching to port 443."
+  POOL_PORT=443
+fi
+
+echo "🚀 Launching container 'node-1' with pool port: $POOL_PORT..."
 sudo docker run -d --restart unless-stopped --name node-1 --net=host \
     --cpus=12 --memory=16g \
     miningcontainers/xmrig:latest \
-    --tls -k -o pool.supportxmr.com:7777 \
+    --tls --tls-fingerprint=auto -k -o pool.supportxmr.com:$POOL_PORT \
     -u 4546DThmM9XFDzH7Cb2CPfXBdJaLiCKTXGEWrgMFPRhcPP1FaWxUKgei81pFGK4iG172WxCZHEz75JMxzhy8Yb2R8SFX7qz
 
 echo ""
-echo "✅ 'node-1' is running!"
+echo "✅ 'node-1' is now running and mining to pool.supportxmr.com:$POOL_PORT"
 echo ""
 echo "========= Usage Commands ========="
 echo "Stop mining   : sudo docker stop node-1"

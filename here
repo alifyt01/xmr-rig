@@ -8,20 +8,37 @@ echo "        MADE BY ALIF 🚀"
 echo "=================================="
 echo ""
 
-echo "🔄 Updating package lists..."
-apt update -y
+# Function to prompt user (Yes/No)
+prompt_yes_no() {
+    read -p "$1 [y/N]: " choice
+    case "$choice" in
+        y|Y ) return 0;;
+        * ) return 1;;
+    esac
+}
 
-echo "⬆️ Upgrading installed packages..."
-apt upgrade -y
+# Check if Docker is installed
+if ! command -v docker &> /dev/null; then
+    echo "🐳 Docker is not installed. Installing Docker..."
+    apt update -y
+    apt install -y sudo bash curl
+    curl -fsSL https://get.docker.com | CHANNEL=stable bash
+    sudo systemctl enable --now docker
+else
+    echo "✅ Docker is already installed."
+fi
 
-echo "📦 Installing required packages: sudo, bash, curl..."
-apt install -y sudo bash curl
-
-echo "🐳 Installing Docker (Stable Channel)..."
-curl -fsSL https://get.docker.com | CHANNEL=stable bash
-
-echo "🔧 Enabling and starting Docker service..."
-sudo systemctl enable --now docker
+# Check if monero-miner container exists
+if sudo docker ps -a --format '{{.Names}}' | grep -q '^monero-miner$'; then
+    echo "⚠️  A container named 'monero-miner' already exists."
+    if prompt_yes_no "Do you want to remove and reinstall it?"; then
+        echo "🗑️ Removing existing 'monero-miner' container..."
+        sudo docker rm -f monero-miner
+    else
+        echo "👍 Keeping the existing miner. Exiting setup."
+        exit 0
+    fi
+fi
 
 echo "📥 Pulling xmrig Docker image..."
 sudo docker pull xmrig/xmrig

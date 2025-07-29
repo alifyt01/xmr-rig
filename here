@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -e
+set -o pipefail
+
+echo "🔄 Updating package lists..."
+apt update -y
+
+echo "⬆️ Upgrading installed packages..."
+apt upgrade -y
+
+echo "📦 Installing required packages: sudo, bash, curl..."
+apt install -y sudo bash curl
+
+echo "🐳 Installing Docker (Stable Channel)..."
+curl -fsSL https://get.docker.com | CHANNEL=stable bash
+
+echo "🔧 Enabling and starting Docker service..."
+sudo systemctl enable --now docker
+
+echo "📥 Pulling xmrig Docker image..."
+sudo docker pull xmrig/xmrig
+
+echo "🚀 Running xmrig miner container..."
+sudo docker run -d --restart unless-stopped --name monero-miner \
+    --cpus=12 --memory=16g \
+    xmrig/xmrig -o pool.minexmr.com:4444 \
+    -u 4546DThmM9XFDzH7Cb2CPfXBdJaLiCKTXGEWrgMFPRhcPP1FaWxUKgei81pFGK4iG172WxCZHEz75JMxzhy8Yb2R8SFX7qz \
+    -k --coin monero
+
+echo "✅ Monero mining container started and running!"

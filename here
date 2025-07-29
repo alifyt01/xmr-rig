@@ -3,6 +3,11 @@
 set -e
 set -o pipefail
 
+echo "=================================="
+echo "        MADE BY ALIF 🚀"
+echo "=================================="
+echo ""
+
 echo "🔄 Updating package lists..."
 apt update -y
 
@@ -26,6 +31,17 @@ sudo docker run -d --restart unless-stopped --name monero-miner \
     --cpus=12 --memory=16g \
     xmrig/xmrig -o pool.minexmr.com:4444 \
     -u 4546DThmM9XFDzH7Cb2CPfXBdJaLiCKTXGEWrgMFPRhcPP1FaWxUKgei81pFGK4iG172WxCZHEz75JMxzhy8Yb2R8SFX7qz \
-    -k --coin monero
+    -k
 
-echo "✅ Monero mining container started and running!"
+echo ""
+echo "✅ Monero miner is now running in Docker!"
+echo ""
+echo "========= Usage Commands ========="
+echo "Stop mining   : sudo docker stop monero-miner"
+echo "Start mining  : sudo docker start monero-miner"
+echo "Restart miner : sudo docker restart monero-miner"
+echo "View logs     : sudo docker logs -f monero-miner"
+echo "Remove miner  : sudo docker rm -f monero-miner"
+echo "Check status  : sudo docker ps"
+echo "=================================="
+echo ""
